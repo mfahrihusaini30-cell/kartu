@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kartu Setia – Sistem Loyalitas Pelanggan</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef3f1;--sf:#fff;--ink:#14261f;--mut:#5c6e66;--ac:#0b6b5d;--acx:#fff;--hl:#f2b23a;--ln:#d5e0db;--er:#b3261e;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1815;--sf:#16241f;--ink:#e6f0ec;--mut:#93a89f;--ac:#3fc3ad;--acx:#07211c;--hl:#f2b23a;--ln:#27382f;--er:#ff8a80}}
+:root[data-theme="dark"]{--bg:#0e1815;--sf:#16241f;--ink:#e6f0ec;--mut:#93a89f;--ac:#3fc3ad;--acx:#07211c;--hl:#f2b23a;--ln:#27382f;--er:#ff8a80}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 'Plus Jakarta Sans',system-ui,sans-serif}
+main{max-width:560px;margin:0 auto;padding:16px 16px 40px}
+h1{font-size:22px;font-weight:800;margin:4px 0 2px}h2{font-size:16px;margin:0 0 10px}
+.sub{color:var(--mut);margin:0 0 14px;font-size:13px}
+nav{display:flex;gap:4px;background:var(--sf);border:1px solid var(--ln);border-radius:12px;padding:4px;margin-bottom:14px}
+nav button{flex:1;border:0;background:none;color:var(--mut);font:600 14px inherit;font-family:inherit;padding:10px;border-radius:9px}
+nav button.on{background:var(--ac);color:var(--acx)}
+.card{background:var(--sf);border:1px solid var(--ln);border-radius:14px;padding:14px;margin-bottom:12px}
+label{display:block;font-size:13px;color:var(--mut);margin:8px 0 4px}
+input,select,textarea{width:100%;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--ln);border-radius:10px;padding:11px}
+button.b{font:600 14px inherit;font-family:inherit;border:0;border-radius:10px;padding:11px 14px;background:var(--ac);color:var(--acx)}
+button.g{background:none;color:var(--ac);border:1px solid var(--ac)}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--hl);outline-offset:2px}
+.row{display:flex;gap:8px;flex-wrap:wrap}.row>*{flex:1;min-width:120px}
+.pts{font-size:34px;font-weight:800;color:var(--ac);line-height:1}
+.bar{height:8px;background:var(--ln);border-radius:6px;overflow:hidden;margin:8px 0 4px}.bar i{display:block;height:100%;background:var(--hl)}
+.m{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 0;border-top:1px solid var(--ln)}
+.m:first-child{border-top:0}.m small{color:var(--mut)}
+.wrap{overflow-x:auto}pre{background:var(--bg);border:1px solid var(--ln);border-radius:10px;padding:10px;font-size:11px;overflow-x:auto;margin:6px 0}
+#toast{position:fixed;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:12px 14px;border-radius:10px;display:none;z-index:9}
+#ov{position:fixed;inset:0;background:rgba(0,0,0,.85);display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;z-index:8;padding:16px}
+#ov video{width:100%;max-width:420px;border-radius:14px}#qr{background:#fff;padding:10px;border-radius:10px;display:inline-block}
+.hide{display:none!important}
+</style>
+</head>
+<body>
+<main>
+<h1>Kartu Setia</h1>
+<p class="sub">Poin 1 per Rp10.000 · Tukar 100 poin = diskon Rp25.000</p>
+<nav><button data-t="k" class="on">Kasir</button><button data-t="m">Member</button><button data-t="s">Spreadsheet</button></nav>
+
+<section id="k">
+ <div class="card">
+  <h2>Cari member</h2>
+  <div class="row"><button class="b" id="bn">Scan NFC</button><button class="b g" id="bq">Scan QR</button></div>
+  <label for="mid">atau ketik ID / nomor HP</label>
+  <input id="mid" placeholder="mis. M-0001 atau 0812…" inputmode="text">
+  <button class="b g" id="fm" style="margin-top:8px;width:100%">Cari</button>
+ </div>
+ <div class="card hide" id="sel">
+  <div class="m"><div><b id="sn"></b><br><small id="si"></small></div><div style="text-align:right"><div class="pts" id="sp">0</div><small>poin</small></div></div>
+  <div class="bar"><i id="sb" style="width:0"></i></div><small id="sh"></small>
+  <label for="am">Total belanja (Rp)</label><input id="am" type="number" inputmode="numeric" min="0">
+  <label for="pm">Metode bayar</label>
+  <select id="pm"><option>QRIS</option><option>Tunai</option><option>NFC / Kartu</option></select>
+  <div class="row" style="margin-top:10px"><button class="b" id="ad">Catat transaksi</button><button class="b g" id="rd">Tukar 100 poin</button></div>
+ </div>
+ <div class="card"><h2>Transaksi terakhir</h2><div id="tl"></div></div>
+</section>
+
+<section id="m" class="hide">
+ <div class="card"><h2>Daftarkan member</h2>
+  <label for="nn">Nama</label><input id="nn" autocomplete="off">
+  <label for="np">Nomor HP</label><input id="np" inputmode="tel">
+  <button class="b" id="nb" style="margin-top:10px;width:100%">Simpan member</button></div>
+ <div class="card"><h2>Daftar member (<span id="mc">0</span>)</h2>
+  <input id="q" placeholder="Cari nama / HP / ID" style="margin-bottom:6px"><div id="ml"></div></div>
+</section>
+
+<section id="s" class="hide">
+ <div class="card"><h2>Database pelanggan</h2>
+  <p class="sub">Data tersimpan di perangkat ini. Pindahkan ke Google Sheets / Excel lewat CSV, atau otomatis lewat Apps Script di bawah.</p>
+  <div class="row"><button class="b" id="ex">Unduh CSV member</button><button class="b g" id="ex2">Unduh CSV transaksi</button></div>
+  <label for="imp">Impor member (tempel CSV: id,nama,hp,poin,total,kunjungan)</label>
+  <textarea id="imp" rows="3"></textarea><button class="b g" id="ib" style="margin-top:8px;width:100%">Impor</button>
+ </div>
+ <div class="card"><h2>Sambung ke Google Sheets</h2>
+  <p class="sub">Halaman ini tidak bisa mengirim data langsung ke situs lain. Untuk sinkron otomatis, pasang Apps Script ini di Sheet Anda (Extensions → Apps Script → Deploy sebagai Web App), lalu pakai di aplikasi yang Anda host sendiri.</p>
+<pre id="gs">function doPost(e){
+ var d=JSON.parse(e.postData.contents);
+ var s=SpreadsheetApp.getActive().getSheetByName(d.sheet);
+ d.rows.forEach(function(r){s.appendRow(r)});
+ return ContentService.createTextOutput('ok');
+}
+function doGet(){
+ var v=SpreadsheetApp.getActive()
+  .getSheetByName('Member').getDataRange().getValues();
+ return ContentService.createTextOutput(JSON.stringify(v))
+  .setMimeType(ContentService.MimeType.JSON);
+}</pre>
+  <button class="b g" id="cg">Salin kode</button></div>
+ <div class="card"><h2>QRIS</h2><p class="sub">Pembayaran QRIS dilakukan lewat QR toko Anda; di sini dicatat sebagai metode bayar dan poin otomatis. Verifikasi pembayaran otomatis butuh payment gateway (Midtrans, Xendit, dsb.).</p></div>
+</section>
+</main>
+
+<div id="ov"><video id="vd" playsinline muted></video><div id="qr" class="hide"></div><button class="b" id="cl">Tutup</button></div>
+<div id="toast" role="status"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+const $=s=>document.querySelector(s),RATE=10000,RWD=100;
+let M=[],T=[],cur=null,stream=null,scanning=false;
+try{M=JSON.parse(localStorage.getItem('ks_m')||'[]');T=JSON.parse(localStorage.getItem('ks_t')||'[]')}catch(e){}
+function save(){try{localStorage.setItem('ks_m',JSON.stringify(M));localStorage.setItem('ks_t',JSON.stringify(T))}catch(e){}}
+function toast(t){const e=$('#toast');e.textContent=t;e.style.display='block';clearTimeout(toast.h);toast.h=setTimeout(()=>e.style.display='none',3200)}
+const rp=n=>'Rp'+Number(n).toLocaleString('id-ID');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+document.querySelectorAll('nav button').forEach(b=>b.onclick=()=>{
+ document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on',x===b));
+ ['k','m','s'].forEach(i=>$('#'+i).classList.toggle('hide',i!==b.dataset.t));render()});
+function find(v){v=String(v).trim().toLowerCase();return M.find(m=>m.id.toLowerCase()===v||m.hp.replace(/\D/g,'')===v.replace(/\D/g,'')&&v.replace(/\D/g,'').length>5)}
+function pick(v){const m=find(v);if(!m){toast('Member tidak ditemukan. Daftarkan di tab Member.');return}cur=m;$('#mid').value='';render()}
+function render(){
+ $('#mc').textContent=M.length;
+ const s=$('#sel');s.classList.toggle('hide',!cur);
+ if(cur){cur=M.find(m=>m.id===cur.id);$('#sn').textContent=cur.name;$('#si').textContent=cur.id+' · '+cur.visits+' kunjungan';
+  $('#sp').textContent=cur.points;const p=cur.points%RWD;$('#sb').style.width=Math.min(100,cur.points/RWD*100)+'%';
+  $('#sh').textContent=cur.points>=RWD?'Siap ditukar diskon Rp25.000':'Kurang '+(RWD-cur.points)+' poin untuk reward';$('#rd').disabled=cur.points<RWD}
+ $('#tl').innerHTML=T.slice(-6).reverse().map(t=>{const m=M.find(x=>x.id===t.id);return `<div class="m"><div>${esc(m?m.name:t.id)}<br><small>${new Date(t.t).toLocaleString('id-ID')} · ${esc(t.method)}</small></div><b>${t.pts>0?'+':''}${t.pts} poin</b></div>`}).join('')||'<small>Belum ada transaksi.</small>';
+ const q=$('#q').value.toLowerCase();
+ $('#ml').innerHTML=M.filter(m=>(m.name+m.hp+m.id).toLowerCase().includes(q)).map(m=>`<div class="m"><div>${esc(m.name)}<br><small>${m.id} · ${esc(m.hp)} · ${m.points} poin</small></div><div class="row" style="flex:none;flex-wrap:nowrap"><button class="b g" data-card="${m.id}" style="min-width:0">QR</button><button class="b g" data-nfc="${m.id}" style="min-width:0">NFC</button></div></div>`).join('')||'<small>Belum ada member.</small>'}
+$('#q').oninput=render;
+$('#fm').onclick=()=>pick($('#mid').value);
+$('#mid').onkeydown=e=>{if(e.key==='Enter')pick(e.target.value)};
+$('#nb').onclick=()=>{const n=$('#nn').value.trim(),h=$('#np').value.trim();
+ if(!n||h.replace(/\D/g,'').length<8){toast('Isi nama dan nomor HP yang valid.');return}
+ if(find(h)){toast('Nomor HP sudah terdaftar.');return}
+ const id='M-'+String(M.length+1).padStart(4,'0');M.push({id,name:n,hp:h,points:0,total:0,visits:0,created:Date.now()});
+ save();$('#nn').value='';$('#np').value='';toast('Member '+id+' tersimpan');render()};
+$('#ad').onclick=()=>{const a=parseInt($('#am').value||0);if(!cur||a<=0){toast('Isi total belanja.');return}
+ const p=Math.floor(a/RATE);cur.points+=p;cur.total+=a;cur.visits++;
+ T.push({t:Date.now(),id:cur.id,amount:a,pts:p,method:$('#pm').value});save();$('#am').value='';toast('+'+p+' poin untuk '+cur.name);render()};
+$('#rd').onclick=()=>{if(!cur||cur.points<RWD)return;cur.points-=RWD;T.push({t:Date.now(),id:cur.id,amount:0,pts:-RWD,method:'Tukar reward'});save();toast('Berikan diskon Rp25.000');render()};
+async function nfcRead(cb){
+ if(!('NDEFReader' in window)){toast('NFC tidak didukung. Buka di Chrome Android (HTTPS).');return}
+ try{const r=new NDEFReader();await r.scan();toast('Tempelkan kartu ke belakang HP…');
+  r.onreading=e=>{for(const x of e.message.records){if(x.recordType==='text'){cb(new TextDecoder(x.encoding||'utf-8').decode(x.data));return}}cb(e.serialNumber)}}
+ catch(e){toast('NFC gagal: '+e.message)}}
+$('#bn').onclick=()=>nfcRead(pick);
+async function nfcWrite(id){
+ if(!('NDEFReader' in window)){toast('NFC tidak didukung di perangkat ini.');return}
+ try{toast('Tempelkan kartu kosong…');await new NDEFReader().write({records:[{recordType:'text',data:id}]});toast('ID '+id+' ditulis ke kartu')}
+ catch(e){toast('Gagal menulis: '+e.message)}}
+async function scanQR(){
+ if(!('BarcodeDetector' in window)){toast('Scan QR tidak didukung. Ketik ID manual.');return}
+ try{stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});}catch(e){toast('Kamera tidak bisa dibuka.');return}
+ const v=$('#vd');v.srcObject=stream;await v.play();$('#qr').classList.add('hide');v.classList.remove('hide');$('#ov').style.display='flex';
+ const d=new BarcodeDetector({formats:['qr_code']});scanning=true;
+ (async function loop(){if(!scanning)return;try{const r=await d.detect(v);if(r.length){closeOv();pick(r[0].rawValue);return}}catch(e){}setTimeout(loop,250)})()}
+$('#bq').onclick=scanQR;
+function closeOv(){scanning=false;if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}$('#ov').style.display='none'}
+$('#cl').onclick=closeOv;
+document.addEventListener('click',e=>{const c=e.target.dataset;
+ if(c.card){const q=$('#qr');q.innerHTML='';$('#vd').classList.add('hide');q.classList.remove('hide');$('#ov').style.display='flex';
+  try{if(typeof QRCode==='undefined')throw 0;const b=document.createElement('div');q.appendChild(b);new QRCode(b,{text:c.card,width:200,height:200})}catch(x){toast('Pembuat QR gagal dimuat. Pakai ID di bawah, atau muat ulang halaman.')}
+  const l=document.createElement('div');l.textContent=c.card;l.style.cssText='color:#000;text-align:center;font-weight:800;margin-top:6px';q.appendChild(l)}
+ if(c.nfc)nfcWrite(c.nfc)});
+function csv(rows){return rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n')}
+function dl(n,t){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+t],{type:'text/csv'}));a.download=n;document.body.appendChild(a);a.click();a.remove()}
+$('#ex').onclick=()=>dl('member.csv',csv([['id','nama','hp','poin','total','kunjungan']].concat(M.map(m=>[m.id,m.name,m.hp,m.points,m.total,m.visits]))));
+$('#ex2').onclick=()=>dl('transaksi.csv',csv([['waktu','id','nominal','poin','metode']].concat(T.map(t=>[new Date(t.t).toISOString(),t.id,t.amount,t.pts,t.method]))));
+$('#ib').onclick=()=>{let n=0;$('#imp').value.split('\n').forEach((l,i)=>{const c=l.split(',').map(x=>x.replace(/^"|"$/g,'').trim());
+ if(c.length<3||c[0]==='id'||M.some(m=>m.id===c[0]))return;M.push({id:c[0],name:c[1],hp:c[2],points:+c[3]||0,total:+c[4]||0,visits:+c[5]||0,created:Date.now()});n++});
+ save();$('#imp').value='';toast(n+' member diimpor');render()};
+$('#cg').onclick=async()=>{try{await navigator.clipboard.writeText($('#gs').textContent);toast('Kode disalin')}catch(e){toast('Tahan teks kode lalu salin manual.')}};
+render();
+</script>
+</body>
+</html>
